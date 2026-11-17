@@ -485,7 +485,11 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
 .tk-brand{ display: table; width: 100%; padding: 11px 0 9px; }
 .tk-logo{
   display: table-cell; vertical-align: middle;
-  width: 40px; height: 40px; border-radius: 9px;
+  width: 40px;
+  box-sizing: border-box;
+}
+.tk-logo > span{
+  display: block; width: 40px; height: 40px; border-radius: 9px;
   text-align: center; overflow: hidden;
   background: #c98a9b;
   background: var(--accent); color: #fff;
@@ -549,8 +553,11 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
 .tk-item:last-child{ border-bottom: 0; }
 .tk-no{
   display: table-cell; vertical-align: middle;
-  width: 22px; height: 22px; border-radius: 6px;
-  text-align: center;
+  width: 22px; box-sizing: border-box;
+}
+.tk-no > span{
+  display: block; width: 22px; height: 22px; border-radius: 6px;
+  text-align: center; line-height: 22px;
   background: var(--tk-soft-2); color: var(--tk-deep-3);
   font-family: var(--tk-mono); font-size: 9px; font-weight: 700; letter-spacing: .02em;
 }
@@ -580,11 +587,14 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
 }
 .tk-stamp{
   display: table-cell; vertical-align: bottom; width: 78px;
+  box-sizing: border-box; text-align: center;
+}
+.tk-stamp > span{
+  display: inline-block; width: 78px; box-sizing: border-box;
   border: 1.5px solid var(--tk-deep-2); border-radius: 6px;
   padding: 5px 9px 4px; text-align: center; line-height: 1.2;
   color: var(--tk-deep-2); opacity: .88;
   font-family: var(--font-cn);
-  box-sizing: border-box;
 }
 .tk-stamp b{ display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; }
 .tk-stamp small{ display: block; margin-top: 2px; font-family: var(--tk-mono); font-size: 6.5px; letter-spacing: .2em; opacity: .85; }
@@ -1111,7 +1121,7 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
     var t = effTotal(), paid = effPaid();
     var lines = state.items.map(function (it, i) {
       return '<div class="tk-item">' +
-          '<div class="tk-no">' + String(i + 1).padStart(2, '0') + '</div>' +
+          '<div class="tk-no"><span>' + String(i + 1).padStart(2, '0') + '</span></div>' +
           '<div class="tk-main">' +
             '<div class="tk-type">' + esc(it.type || '—') +
               (it.sub ? '<em>' + esc(it.sub) + '</em>' : '') +
@@ -1145,7 +1155,7 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
         '<div class="tk-brand">' +
           (state.logoImg
             ? '<div class="tk-logo tk-logo-img"><img src="' + state.logoImg + '" alt="徽章头像"></div>'
-            : '<div class="tk-logo">' + esc(mark) + '</div>') +
+            : '<div class="tk-logo"><span>' + esc(mark) + '</span></div>') +
           '<div class="tk-name">' +
             '<h3>' + esc(state.clubCn || '小店') + '</h3>' +
             '<p>' + esc(state.clubEn || '') + '</p>' +
@@ -1163,7 +1173,7 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
         '<div class="tk-split"></div>' +
         '<div class="tk-sum">' +
           '<div class="tk-sum-l"><small>TOTAL · 合计</small><b>' + money(t, false) + '</b></div>' +
-          '<div class="tk-stamp"><b>' + esc(state.stampText || '小笨') + '</b><small>XIAO BEN</small></div>' +
+          '<div class="tk-stamp"><span><b>' + esc(state.stampText || '小笨') + '</b><small>XIAO BEN</small></span></div>' +
         '</div>' +
         '<div class="tk-two">' +
           '<div class="tk-chip a"><small>实付 PAID</small><b>' + money(paid, false) + '</b></div>' +
