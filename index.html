@@ -712,6 +712,21 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
 .save-acts{ display: flex; gap: 8px; }
 .save-acts .btn[hidden]{ display: none !important; }
 .save-acts .btn{ flex: 1; }
+.big-view{
+  position: fixed; inset: 0; z-index: 120;
+  background: hsl(0 0% 6% / .94);
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px;
+}
+.big-view img, .big-view video{
+  max-width: 100%; max-height: 88vh; border-radius: 10px;
+  -webkit-touch-callout: default; touch-action: auto;
+}
+.big-close{
+  position: absolute; top: 14px; right: 14px;
+  width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: hsl(0 0% 100% / .18); color: #fff; font-size: 20px; line-height: 1;
+}
 
 [data-night="on"] .actionbar{
     background: linear-gradient(to top, hsl(var(--hue) 26% 12% / .96) 30%, hsl(var(--hue) 26% 12% / .7));
@@ -935,6 +950,7 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
     <p class="save-tip" id="saveTip"></p>
     <div class="save-acts">
       <button class="btn btn-primary save-share" id="saveShare" type="button" hidden>保存到相册</button>
+      <button class="btn btn-primary" id="saveOpenStage" type="button" hidden>点开大图/视频</button>
       <button class="btn btn-ghost" id="saveOpen" type="button" hidden>新窗口打开</button>
       <button class="btn btn-ghost" id="saveDownload" type="button">下载文件</button>
     </div>
@@ -1339,13 +1355,14 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
     $('#saveStage').innerHTML = '';
     $('#saveShare').hidden = true;
     $('#saveOpen').hidden = true;
+    $('#saveOpenStage').hidden = true;
     if (saveObj) { URL.revokeObjectURL(saveObj.url); saveObj = null; }
   }
 
   function showSave(blob, name, kind) {
     closeSheet();
     var url = URL.createObjectURL(blob);
-    saveObj = { url: url, blob: blob, name: name };
+    saveObj = { url: url, blob: blob, name: name, kind: kind };
     var stage = $('#saveStage');
     stage.innerHTML = '';
     var el;
@@ -1353,6 +1370,7 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
       el = document.createElement('video');
       el.src = url; el.controls = true; el.loop = true; el.muted = true;
       el.playsInline = true; el.autoplay = true; el.setAttribute('playsinline', '');
+      el.setAttribute('webkit-playsinline', '');
     } else {
       el = document.createElement('img');
       el.src = url; el.alt = '结单小票';
@@ -1362,16 +1380,53 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
     var file = null;
     try { file = new File([blob], name, { type: blob.type || 'application/octet-stream' }); } catch (e) { file = null; }
     var canShare = !!(navigator.canShare && file && navigator.canShare({ files: [file] }));
+    var isWechat = /MicroMessenger/i.test(navigator.userAgent);
+
     $('#saveShare').hidden = !canShare;
     $('#saveOpen').hidden = kind !== 'video';
-    $('#saveTip').textContent = kind === 'video'
-      ? (canShare
-          ? 'MP4 格式（H.264），点「保存到相册」调起系统面板选「存储视频」即可。'
-          : 'MP4 格式（H.264，相册可直接读）。点「新窗口打开」用系统分享存进相册，或「下载文件」。')
-      : (canShare
-          ? '长按上方图片，选「存储图像／保存图片」就能进相册；也可以点「保存到相册」。'
-          : '长按上方图片，选「存储图像／保存图片」即可存进相册；电脑上点「下载文件」。');
+    $('#saveOpenStage').hidden = false;
+
+    var tip;
+    if (isWechat) {
+      tip = '当前在微信里：点右上角「···」选「在浏览器打开」，再长按图片／点保存到相册，即可存进相册。';
+    } else if (kind === 'video') {
+      tip = canShare
+        ? '视频已生成：先点「保存到相册」；若没反应，点「点开大图/视频」后长按画面，或点「新窗口打开」用系统分享存储。'
+        : '视频已生成：点「点开大图/视频」，在全屏页长按或用右上角分享存进相册；也可以点「下载文件」。';
+    } else {
+      tip = canShare
+        ? '长按上方图片即可存进相册；也可以点「保存到相册」，或点「点开大图/视频」后再长按。'
+        : '长按上方图片存进相册；若长按无效，点「点开大图/视频」再长按，或用「下载文件」。';
+    }
+    $('#saveTip').textContent = tip;
     $('#saveSheet').hidden = false;
+
+    var big = null;
+    function openBig() {
+      if (big) return;
+      big = document.createElement('div');
+      big.className = 'big-view';
+      var bEl;
+      if (kind === 'video') {
+        bEl = document.createElement('video');
+        bEl.src = url; bEl.controls = true; bEl.loop = true; bEl.muted = true;
+        bEl.autoplay = true; bEl.playsInline = true; bEl.setAttribute('playsinline', '');
+      } else {
+        bEl = document.createElement('img');
+        bEl.src = url; bEl.alt = '结单小票';
+      }
+      var closeBtn = document.createElement('button');
+      closeBtn.type = 'button'; closeBtn.className = 'big-close'; closeBtn.textContent = '×';
+      big.appendChild(bEl); big.appendChild(closeBtn);
+      document.body.appendChild(big);
+      function destroy() { if (big) { big.remove(); big = null; } }
+      closeBtn.onclick = destroy;
+      big.addEventListener('click', function (e) { if (e.target === big) destroy(); });
+      if (kind !== 'video') {
+        bEl.addEventListener('contextmenu', function () { });
+      }
+    }
+    $('#saveOpenStage').onclick = openBig;
 
     $('#saveShare').onclick = function () {
       if (!canShare || !file) return;
@@ -1382,11 +1437,32 @@ var X={signature:"GIF",version:"89a",trailer:59,extensionIntroducer:33,applicati
       window.open(saveObj.url, '_blank');
     };
     $('#saveDownload').onclick = function () {
-      if (!saveObj) return;
-      var a = document.createElement('a');
-      a.href = saveObj.url; a.download = saveObj.name;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      downloadBlob(saveObj.blob, saveObj.name);
     };
+  }
+
+  function downloadBlob(blob, name) {
+    var url = URL.createObjectURL(blob);
+    function trigger(href, filename) {
+      var a = document.createElement('a');
+      a.href = href;
+      a.download = filename;
+      a.rel = 'noopener';
+      a.target = '_blank';
+      if (typeof a.setAttribute === 'function') a.setAttribute('download', filename);
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+    }
+    try { trigger(url, name); } catch (e) {}
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { trigger(reader.result, name); } catch (e) {}
+    };
+    try { reader.readAsDataURL(blob); } catch (e) {}
+    setTimeout(function () {
+      try { window.open(url, '_blank'); } catch (e) {}
+    }, 300);
   }
 
   /* 把「出纸 → 停一下 → 撕下」画在一张画布上，视频和动图共用 */
