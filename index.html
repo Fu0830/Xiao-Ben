@@ -486,11 +486,12 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
 .tk-logo{
   display: table-cell; vertical-align: middle;
   width: 40px; height: 40px; border-radius: 9px;
-  text-align: center;
+  text-align: center; overflow: hidden;
   background: #c98a9b;
   background: var(--accent); color: #fff;
   font-family: var(--tk-mono); font-size: 12.5px; font-weight: 700; letter-spacing: .06em; line-height: 40px;
   box-shadow: inset 0 0 0 1px hsl(0 0% 100% / .4);
+  box-sizing: border-box;
 }
 .tk-name{ display: table-cell; vertical-align: middle; padding-left: 11px; }
 .tk-logo-img{ padding: 0; overflow: hidden; }
@@ -581,10 +582,10 @@ select.control{ appearance: none; -webkit-appearance: none; padding-right: 30px;
   display: table-cell; vertical-align: bottom; width: 78px;
   border: 1.5px solid var(--tk-deep-2); border-radius: 6px;
   padding: 5px 9px 4px; text-align: center; line-height: 1.2;
-  color: var(--tk-deep-2); transform: rotate(-4deg); opacity: .88;
+  color: var(--tk-deep-2); opacity: .88;
   font-family: var(--font-cn);
+  box-sizing: border-box;
 }
-.tk-stamp::before{ content: ""; position: absolute; inset: 3px; border: 1px solid currentColor; border-radius: 3px; opacity: .6; }
 .tk-stamp b{ display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; }
 .tk-stamp small{ display: block; margin-top: 2px; font-family: var(--tk-mono); font-size: 6.5px; letter-spacing: .2em; opacity: .85; }
 .tk-stamp.is-hidden{ display: none; }
